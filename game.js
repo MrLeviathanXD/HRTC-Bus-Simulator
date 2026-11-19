@@ -1,594 +1,1615 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-// =====================================
-// HRTC BUS SIMULATOR 3D
-// =====================================
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x91c8ed);
-scene.fog = new THREE.Fog(0x91c8ed, 100, 650);
-
-const camera = new THREE.PerspectiveCamera(
-75,
-window.innerWidth / window.innerHeight,
-0.1,
-1000
-);
-
-camera.position.set(0, 1.65, 0);
-camera.rotation.order = 'YXZ';
-
-const renderer = new THREE.WebGLRenderer({
-antialias: false,
-powerPreference: 'high-performance'
-});
-
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-renderer.shadowMap.enabled = false;
-document.body.appendChild(renderer.domElement);
-
-// =====================================
-// LIGHTING
-// =====================================
-
-scene.add(new THREE.HemisphereLight(0xffffff, 0x536b42, 2));
-
-const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(100, 150, -100);
-scene.add(sunlight);
-
-// =====================================
-// MATERIALS
-// =====================================
-
-const green = new THREE.MeshLambertMaterial({ color: 0x477c42 });
-const roadMaterial = new THREE.MeshLambertMaterial({ color: 0x30343a });
-const yellow = new THREE.MeshLambertMaterial({ color: 0xffcc00 });
-const black = new THREE.MeshLambertMaterial({ color: 0x151719 });
-const grey = new THREE.MeshLambertMaterial({ color: 0x777777 });
-const glass = new THREE.MeshBasicMaterial({
-color: 0x9bcbe0,
-transparent: true,
-opacity: 0.25
-});
-
-// =====================================
-// WORLD
-// =====================================
-
-// Ground
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(1000, 1500),
-green
-);
-ground.rotation.x = -Math.PI / 2;
-ground.position.set(0, -0.15, -650);
-scene.add(ground);
-
-// Main road
-const road = new THREE.Mesh(
-new THREE.PlaneGeometry(12, 1500),
-roadMaterial
-);
-road.rotation.x = -Math.PI / 2;
-road.position.set(0, 0, -650);
-scene.add(road);
-
-// Road edges
-for (const x of [-6, 6]) {
-const edge = new THREE.Mesh(
-new THREE.BoxGeometry(0.18, 0.12, 1500),
-yellow
-);
-edge.position.set(x, 0.05, -650);
-scene.add(edge);
-}
-
-// Road lane markings
-const lines = [];
-
-for (let i = 0; i < 70; i++) {
-const line = new THREE.Mesh(
-new THREE.BoxGeometry(0.16, 0.025, 6),
-new THREE.MeshBasicMaterial({ color: 0xffffff })
-);
-
-line.position.set(0, 0.04, -i * 20);
-scene.add(line);
-lines.push(line);
-
-}
-
-// =====================================
-// HIMACHAL MOUNTAINS
-// =====================================
-
-for (let i = 0; i < 35; i++) {
-const height = 35 + Math.random() * 85;
-
-const mountain = new THREE.Mesh(
-    new THREE.ConeGeometry(25 + Math.random() * 35, height, 5),
-    new THREE.MeshLambertMaterial({
-        color: i % 3 === 0 ? 0x647e75 : 0x526e55
-    })
-);
-
-const side = i % 2 === 0 ? -1 : 1;
-
-mountain.position.set(
-    side * (45 + Math.random() * 100),
-    height / 2 - 3,
-    -Math.random() * 1200
-);
-
-scene.add(mountain);
-
-}
-
-// =====================================
-// TREES
-// =====================================
-
-const treeTrunk = new THREE.MeshLambertMaterial({
-color: 0x60412a
-});
-
-const treeLeaves = new THREE.MeshLambertMaterial({
-color: 0x185c35
-});
-
-function createTree(x, z) {
-const tree = new THREE.Group();
-
-const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.25, 0.4, 3),
-    treeTrunk
-);
-trunk.position.y = 1.5;
-tree.add(trunk);
-
-const leaves = new THREE.Mesh(
-    new THREE.ConeGeometry(2, 6, 6),
-    treeLeaves
-);
-leaves.position.y = 5;
-tree.add(leaves);
-
-tree.position.set(x, 0, z);
-scene.add(tree);
-
-}
-
-for (let i = 0; i < 110; i++) {
-const side = i % 2 === 0 ? -1 : 1;
-
-createTree(
-    side * (9 + Math.random() * 25),
-    -Math.random() * 1300
-);
-
-}
-
-// =====================================
-// BUS INTERIOR
-// =====================================
-
-const cabin = new THREE.Group();
-camera.add(cabin);
-scene.add(camera);
-
-// Dashboard
-const dashboard = new THREE.Mesh(
-new THREE.BoxGeometry(2.6, 0.35, 0.8),
-black
-);
-
-dashboard.position.set(0, -0.65, -1.3);
-cabin.add(dashboard);
-
-// Dashboard upper panel
-const panel = new THREE.Mesh(
-new THREE.BoxGeometry(2.5, 0.16, 0.15),
-grey
-);
-
-panel.position.set(0, -0.48, -1.5);
-cabin.add(panel);
-
-// Windshield pillars
-for (const x of [-1.35, 1.35]) {
-const pillar = new THREE.Mesh(
-new THREE.BoxGeometry(0.12, 1.7, 0.15),
-black
-);
-
-pillar.position.set(x, 0.35, -1.5);
-cabin.add(pillar);
-
-}
-
-// Roof frame
-const roof = new THREE.Mesh(
-new THREE.BoxGeometry(2.8, 0.15, 0.25),
-black
-);
-
-roof.position.set(0, 1.15, -1.5);
-cabin.add(roof);
-
-// Steering wheel
-const steeringWheel = new THREE.Mesh(
-new THREE.TorusGeometry(0.32, 0.045, 8, 24),
-black
-);
-
-steeringWheel.position.set(-0.55, -0.35, -0.95);
-steeringWheel.rotation.x = 0.35;
-cabin.add(steeringWheel);
-
-// Steering centre
-const steeringCenter = new THREE.Mesh(
-new THREE.CylinderGeometry(0.12, 0.12, 0.1, 16),
-grey
-);
-
-steeringCenter.rotation.x = Math.PI / 2;
-steeringCenter.position.set(-0.55, -0.35, -0.95);
-cabin.add(steeringCenter);
-
-// Interior mirrors
-for (const x of [-1.15, 1.15]) {
-const mirror = new THREE.Mesh(
-new THREE.BoxGeometry(0.45, 0.18, 0.08),
-black
-);
-
-mirror.position.set(x, 0.65, -1.35);
-cabin.add(mirror);
-
-}
-
-// Dashboard meters
-const meter = new THREE.Mesh(
-new THREE.BoxGeometry(0.8, 0.25, 0.08),
-new THREE.MeshBasicMaterial({ color: 0x152e29 })
-);
-
-meter.position.set(0.35, -0.5, -1.0);
-cabin.add(meter);
-
-// =====================================
-// PASSENGER STOPS
-// =====================================
-
-const stops = [];
-const passengers = [];
-
-function createPassenger(x, z) {
-const person = new THREE.Group();
-
-const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.22, 0.25, 1, 8),
-    new THREE.MeshLambertMaterial({
-        color: Math.random() * 0xffffff
-    })
-);
-
-body.position.y = 0.9;
-person.add(body);
-
-const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.18, 8, 8),
-    new THREE.MeshLambertMaterial({ color: 0xc58b60 })
-);
-
-head.position.y = 1.55;
-person.add(head);
-
-person.position.set(x, 0, z);
-scene.add(person);
-
-return person;
-
-}
-
-for (let i = 1; i <= 12; i++) {
-const z = -i * 85;
-
-const stop = {
-    z: z,
-    passengers: 2 + Math.floor(Math.random() * 4),
-    collected: false
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+/* =========================================
+   HRTC BUS SIMULATOR
+   GAME ENGINE
+========================================= */
+
+const $ = id => document.getElementById(id);
+
+const loadingScreen = $("loadingScreen");
+const startScreen = $("startScreen");
+const gameContainer = $("gameContainer");
+const loadingStatus = $("loadingStatus");
+
+let scene, camera, renderer, clock;
+let roadCurve;
+let roadLength = 0;
+
+let running = false;
+let paused = false;
+let finished = false;
+
+let speed = 0;
+let distance = 0;
+let fuel = 100;
+let money = 0;
+let passengers = 0;
+
+let currentGear = "N";
+let lateralPosition = 0;
+let steering = 0;
+
+let acceleratorPressed = false;
+let brakePressed = false;
+let clutchPressed = false;
+
+let doorsOpen = false;
+let lightsOn = false;
+
+let notificationTimer = null;
+
+const roadWidth = 13;
+
+const gearLimits = {
+    R: 15,
+    N: 0,
+    1: 18,
+    2: 32,
+    3: 48,
+    4: 67,
+    5: 85
 };
 
-stops.push(stop);
+const gearAcceleration = {
+    R: 1.8,
+    N: 0,
+    1: 5.0,
+    2: 3.8,
+    3: 2.8,
+    4: 2.0,
+    5: 1.5
+};
 
-// Bus stop sign
-const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.06, 0.06, 3),
-    grey
-);
+const stops = [
+    {
+        name: "Kufri",
+        location: "Kufri",
+        fraction: 0.19,
+        passengers: 5,
+        completed: false
+    },
+    {
+        name: "Narkanda",
+        location: "Narkanda",
+        fraction: 0.40,
+        passengers: 4,
+        completed: false
+    },
+    {
+        name: "Kullu",
+        location: "Kullu",
+        fraction: 0.69,
+        passengers: 6,
+        completed: false
+    },
+    {
+        name: "Manali",
+        location: "Manali",
+        fraction: 0.91,
+        passengers: 7,
+        completed: false
+    }
+];
 
-pole.position.set(8, 1.5, z);
-scene.add(pole);
+let currentStop = null;
 
-const sign = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, 0.7, 0.12),
-    yellow
-);
+/* =========================================
+   INITIALIZATION
+========================================= */
 
-sign.position.set(8, 3.2, z);
-scene.add(sign);
+async function initializeGame() {
 
-// Waiting passengers
-for (let j = 0; j < stop.passengers; j++) {
-    passengers.push({
-        object: createPassenger(
-            7 + (j % 2) * 0.8,
-            z + Math.floor(j / 2) * 1.0
+    loadingStatus.textContent = "Creating 3D environment...";
+
+    scene = new THREE.Scene();
+
+    scene.background = new THREE.Color(0x91c9ed);
+
+    scene.fog = new THREE.Fog(
+        0x91c9ed,
+        180,
+        1000
+    );
+
+    camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        2500
+    );
+
+    renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        powerPreference: "low-power"
+    });
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 1.25)
+    );
+
+    renderer.shadowMap.enabled = false;
+
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    $("gameCanvas").appendChild(renderer.domElement);
+
+    clock = new THREE.Clock();
+
+    createLighting();
+    createRoad();
+    createTerrain();
+    createScenery();
+    createBusCockpit();
+    createBusStops();
+
+    scene.add(camera);
+
+    updateCameraPosition();
+
+    loadingStatus.textContent = "Almost ready...";
+
+    loadingScreen.style.display = "none";
+
+    startScreen.style.display = "flex";
+
+    animate();
+}
+
+/* =========================================
+   LIGHTING
+========================================= */
+
+function createLighting() {
+
+    const ambient = new THREE.HemisphereLight(
+        0xffffff,
+        0x526b49,
+        2.0
+    );
+
+    scene.add(ambient);
+
+    const sunlight = new THREE.DirectionalLight(
+        0xffffff,
+        2.2
+    );
+
+    sunlight.position.set(100, 200, 100);
+
+    scene.add(sunlight);
+}
+
+/* =========================================
+   MOUNTAIN ROAD
+========================================= */
+
+function createRoad() {
+
+    const points = [
+
+        new THREE.Vector3(0, 2, 0),
+
+        new THREE.Vector3(0, 4, -180),
+
+        new THREE.Vector3(65, 10, -380),
+
+        new THREE.Vector3(130, 22, -560),
+
+        new THREE.Vector3(40, 40, -760),
+
+        new THREE.Vector3(-90, 55, -980),
+
+        new THREE.Vector3(-150, 45, -1200),
+
+        new THREE.Vector3(-40, 30, -1450),
+
+        new THREE.Vector3(100, 18, -1680),
+
+        new THREE.Vector3(180, 35, -1900),
+
+        new THREE.Vector3(80, 55, -2150),
+
+        new THREE.Vector3(-80, 65, -2400),
+
+        new THREE.Vector3(-130, 75, -2650)
+
+    ];
+
+    roadCurve = new THREE.CatmullRomCurve3(
+        points,
+        false,
+        "catmullrom",
+        0.35
+    );
+
+    roadLength = roadCurve.getLength();
+
+    const segments = 700;
+
+    const vertices = [];
+    const indices = [];
+    const uvs = [];
+
+    for (let i = 0; i <= segments; i++) {
+
+        const t = i / segments;
+
+        const point = roadCurve.getPointAt(t);
+
+        const tangent = roadCurve.getTangentAt(t);
+
+        const right = new THREE.Vector3(
+            -tangent.z,
+            0,
+            tangent.x
+        ).normalize();
+
+        const leftPoint = point.clone().addScaledVector(
+            right,
+            -roadWidth / 2
+        );
+
+        const rightPoint = point.clone().addScaledVector(
+            right,
+            roadWidth / 2
+        );
+
+        vertices.push(
+            leftPoint.x,
+            leftPoint.y + 0.15,
+            leftPoint.z
+        );
+
+        vertices.push(
+            rightPoint.x,
+            rightPoint.y + 0.15,
+            rightPoint.z
+        );
+
+        uvs.push(0, t * 50);
+        uvs.push(1, t * 50);
+
+        if (i < segments) {
+
+            const a = i * 2;
+            const b = a + 1;
+            const c = a + 2;
+            const d = a + 3;
+
+            indices.push(a, c, b);
+            indices.push(b, c, d);
+        }
+    }
+
+    const roadGeometry = new THREE.BufferGeometry();
+
+    roadGeometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(vertices, 3)
+    );
+
+    roadGeometry.setAttribute(
+        "uv",
+        new THREE.Float32BufferAttribute(uvs, 2)
+    );
+
+    roadGeometry.setIndex(indices);
+
+    roadGeometry.computeVertexNormals();
+
+    const roadMaterial = new THREE.MeshStandardMaterial({
+        color: 0x35383c,
+        roughness: 1
+    });
+
+    const road = new THREE.Mesh(
+        roadGeometry,
+        roadMaterial
+    );
+
+    scene.add(road);
+
+    createRoadMarkings();
+    createGuardrails();
+}
+
+/* =========================================
+   ROAD MARKINGS
+========================================= */
+
+function createRoadMarkings() {
+
+    const markingMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffd54f
+    });
+
+    for (let i = 0; i < 300; i++) {
+
+        const t = i / 300;
+
+        const point = roadCurve.getPointAt(t);
+
+        const tangent = roadCurve.getTangentAt(t);
+
+        const stripe = new THREE.Mesh(
+            new THREE.BoxGeometry(0.18, 0.05, 3),
+            markingMaterial
+        );
+
+        stripe.position.set(
+            point.x,
+            point.y + 0.25,
+            point.z
+        );
+
+        stripe.rotation.y = Math.atan2(
+            tangent.x,
+            -tangent.z
+        );
+
+        scene.add(stripe);
+    }
+}
+
+/* =========================================
+   GUARDRAILS
+========================================= */
+
+function createGuardrails() {
+
+    const railMaterial = new THREE.MeshStandardMaterial({
+        color: 0xb9c2c9,
+        metalness: 0.7,
+        roughness: 0.4
+    });
+
+    const postMaterial = new THREE.MeshStandardMaterial({
+        color: 0x777777
+    });
+
+    for (let i = 0; i <= 250; i++) {
+
+        const t = i / 250;
+
+        const point = roadCurve.getPointAt(t);
+
+        const tangent = roadCurve.getTangentAt(t);
+
+        const right = new THREE.Vector3(
+            -tangent.z,
+            0,
+            tangent.x
+        ).normalize();
+
+        for (const side of [-1, 1]) {
+
+            const position = point.clone().addScaledVector(
+                right,
+                side * (roadWidth / 2 + 0.6)
+            );
+
+            const post = new THREE.Mesh(
+                new THREE.BoxGeometry(0.18, 1.2, 0.18),
+                postMaterial
+            );
+
+            post.position.copy(position);
+
+            post.position.y += 0.8;
+
+            scene.add(post);
+
+            if (i % 2 === 0) {
+
+                const rail = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.15, 0.15, 4),
+                    railMaterial
+                );
+
+                rail.position.copy(position);
+
+                rail.position.y += 1.2;
+
+                rail.rotation.y = Math.atan2(
+                    tangent.x,
+                    -tangent.z
+                );
+
+                scene.add(rail);
+            }
+        }
+    }
+}
+
+/* =========================================
+   TERRAIN
+========================================= */
+
+function createTerrain() {
+
+    const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(6000, 6000),
+        new THREE.MeshStandardMaterial({
+            color: 0x527b43,
+            roughness: 1
+        })
+    );
+
+    ground.rotation.x = -Math.PI / 2;
+
+    ground.position.set(0, -8, -1300);
+
+    scene.add(ground);
+
+    const mountainMaterial = new THREE.MeshStandardMaterial({
+        color: 0x687e85,
+        roughness: 1
+    });
+
+    for (let i = 0; i < 45; i++) {
+
+        const mountain = new THREE.Mesh(
+            new THREE.ConeGeometry(
+                80 + Math.random() * 100,
+                180 + Math.random() * 180,
+                6
+            ),
+            mountainMaterial
+        );
+
+        mountain.position.set(
+            (Math.random() - 0.5) * 1800,
+            35 + Math.random() * 100,
+            -Math.random() * 3000
+        );
+
+        mountain.rotation.y = Math.random() * Math.PI;
+
+        scene.add(mountain);
+    }
+}
+
+/* =========================================
+   PINE TREES AND SCENERY
+========================================= */
+
+function createScenery() {
+
+    const trunkGeometry = new THREE.CylinderGeometry(
+        0.3,
+        0.45,
+        4,
+        5
+    );
+
+    const leafGeometry = new THREE.ConeGeometry(
+        3,
+        9,
+        6
+    );
+
+    const trunkMaterial = new THREE.MeshStandardMaterial({
+        color: 0x68442a
+    });
+
+    const leafMaterial = new THREE.MeshStandardMaterial({
+        color: 0x164d32
+    });
+
+    const trunkGroup = new THREE.Group();
+    const leafGroup = new THREE.Group();
+
+    for (let i = 0; i < 300; i++) {
+
+        const t = Math.random();
+
+        const point = roadCurve.getPointAt(t);
+
+        const tangent = roadCurve.getTangentAt(t);
+
+        const right = new THREE.Vector3(
+            -tangent.z,
+            0,
+            tangent.x
+        ).normalize();
+
+        const side = Math.random() > 0.5 ? 1 : -1;
+
+        const offset = 18 + Math.random() * 100;
+
+        const position = point.clone().addScaledVector(
+            right,
+            side * offset
+        );
+
+        const trunk = new THREE.Mesh(
+            trunkGeometry,
+            trunkMaterial
+        );
+
+        trunk.position.set(
+            position.x,
+            position.y + 2,
+            position.z
+        );
+
+        const leaves = new THREE.Mesh(
+            leafGeometry,
+            leafMaterial
+        );
+
+        leaves.position.set(
+            position.x,
+            position.y + 8,
+            position.z
+        );
+
+        const scale = 0.7 + Math.random() * 1.3;
+
+        trunk.scale.setScalar(scale);
+        leaves.scale.setScalar(scale);
+
+        trunkGroup.add(trunk);
+        leafGroup.add(leaves);
+    }
+
+    scene.add(trunkGroup);
+    scene.add(leafGroup);
+}
+
+/* =========================================
+   BUS COCKPIT
+========================================= */
+
+function createBusCockpit() {
+
+    const dashboardMaterial = new THREE.MeshStandardMaterial({
+        color: 0x20252a,
+        roughness: 0.8
+    });
+
+    const metalMaterial = new THREE.MeshStandardMaterial({
+        color: 0x555e64,
+        metalness: 0.7
+    });
+
+    const glassMaterial = new THREE.MeshBasicMaterial({
+        color: 0x263c4c,
+        transparent: true,
+        opacity: 0.25,
+        side: THREE.DoubleSide
+    });
+
+    // Dashboard
+
+    const dashboard = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.35, 0.9),
+        dashboardMaterial
+    );
+
+    dashboard.position.set(
+        0,
+        -0.65,
+        -1.35
+    );
+
+    camera.add(dashboard);
+
+    // Dashboard front
+
+    const front = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.18, 0.2),
+        metalMaterial
+    );
+
+    front.position.set(
+        0,
+        -0.48,
+        -1.78
+    );
+
+    camera.add(front);
+
+    // Steering wheel
+
+    const steeringWheel = new THREE.Mesh(
+        new THREE.TorusGeometry(
+            0.34,
+            0.055,
+            8,
+            32
         ),
-        stop: stop
+        new THREE.MeshStandardMaterial({
+            color: 0x111111
+        })
+    );
+
+    steeringWheel.position.set(
+        0,
+        -0.45,
+        -0.92
+    );
+
+    camera.add(steeringWheel);
+
+    // Steering wheel center
+
+    const center = new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            0.09,
+            0.09,
+            0.12,
+            16
+        ),
+        metalMaterial
+    );
+
+    center.rotation.x = Math.PI / 2;
+
+    center.position.set(
+        0,
+        -0.45,
+        -0.92
+    );
+
+    camera.add(center);
+
+    // Steering spokes
+
+    for (let i = 0; i < 3; i++) {
+
+        const spoke = new THREE.Mesh(
+            new THREE.BoxGeometry(0.04, 0.34, 0.05),
+            metalMaterial
+        );
+
+        spoke.position.set(
+            0,
+            -0.45,
+            -0.92
+        );
+
+        spoke.rotation.z = i * Math.PI / 3;
+
+        camera.add(spoke);
+    }
+
+    // Windshield pillars
+
+    for (const side of [-1, 1]) {
+
+        const pillar = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 1.9, 0.15),
+            dashboardMaterial
+        );
+
+        pillar.position.set(
+            side * 1.2,
+            0.45,
+            -1.7
+        );
+
+        camera.add(pillar);
+    }
+
+    // Windshield upper frame
+
+    const upperFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.12, 0.15),
+        dashboardMaterial
+    );
+
+    upperFrame.position.set(
+        0,
+        1.25,
+        -1.7
+    );
+
+    camera.add(upperFrame);
+
+    // Small instrument panel
+
+    const instrument = new THREE.Mesh(
+        new THREE.BoxGeometry(0.9, 0.25, 0.08),
+        new THREE.MeshBasicMaterial({
+            color: 0x071c24
+        })
+    );
+
+    instrument.position.set(
+        0,
+        -0.25,
+        -1.8
+    );
+
+    camera.add(instrument);
+
+    // Dashboard lights
+
+    for (let i = 0; i < 3; i++) {
+
+        const light = new THREE.Mesh(
+            new THREE.CircleGeometry(0.045, 12),
+            new THREE.MeshBasicMaterial({
+                color: [0x00ff88, 0xffca28, 0xff3333][i]
+            })
+        );
+
+        light.position.set(
+            -0.25 + i * 0.25,
+            -0.25,
+            -1.75
+        );
+
+        camera.add(light);
+    }
+}
+
+/* =========================================
+   BUS STOP SIGNS
+========================================= */
+
+function createBusStops() {
+
+    stops.forEach(stop => {
+
+        const point = roadCurve.getPointAt(stop.fraction);
+
+        const tangent = roadCurve.getTangentAt(stop.fraction);
+
+        const right = new THREE.Vector3(
+            -tangent.z,
+            0,
+            tangent.x
+        ).normalize();
+
+        const position = point.clone().addScaledVector(
+            right,
+            roadWidth / 2 + 4
+        );
+
+        const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.12,
+                0.12,
+                4,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x555555
+            })
+        );
+
+        pole.position.set(
+            position.x,
+            position.y + 2,
+            position.z
+        );
+
+        scene.add(pole);
+
+        const sign = new THREE.Mesh(
+            new THREE.BoxGeometry(2.5, 1.2, 0.12),
+            new THREE.MeshStandardMaterial({
+                color: 0x087f45
+            })
+        );
+
+        sign.position.set(
+            position.x,
+            position.y + 4,
+            position.z
+        );
+
+        scene.add(sign);
+
+        const label = createTextSprite(stop.name);
+
+        label.position.set(
+            position.x,
+            position.y + 4,
+            position.z + 0.1
+        );
+
+        scene.add(label);
+
+        // Simple waiting passengers
+
+        for (let i = 0; i < stop.passengers; i++) {
+
+            const person = createPerson();
+
+            person.position.set(
+                position.x + (Math.random() - 0.5) * 4,
+                position.y,
+                position.z - 3 - Math.random() * 3
+            );
+
+            scene.add(person);
+
+            stop.personObjects = stop.personObjects || [];
+
+            stop.personObjects.push(person);
+        }
     });
 }
 
+/* =========================================
+   TEXT SPRITE
+========================================= */
+
+function createTextSprite(text) {
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = 512;
+    canvas.height = 128;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#087f45";
+
+    ctx.fillRect(0, 0, 512, 128);
+
+    ctx.fillStyle = "white";
+
+    ctx.font = "bold 58px Arial";
+
+    ctx.textAlign = "center";
+
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(text, 256, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const material = new THREE.SpriteMaterial({
+        map: texture
+    });
+
+    const sprite = new THREE.Sprite(material);
+
+    sprite.scale.set(6, 1.5, 1);
+
+    return sprite;
 }
 
-// =====================================
-// GAME VARIABLES
-// =====================================
+/* =========================================
+   SIMPLE PASSENGER MODEL
+========================================= */
 
-let speed = 0;
-let money = 0;
-let fuel = 100;
-let gear = 0;
-let steering = 0;
-let throttle = false;
-let braking = false;
-let clutch = false;
+function createPerson() {
 
-let busPosition = 0;
-let engineRPM = 750;
+    const person = new THREE.Group();
 
-const maxSpeed = 85;
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 1, 0.35),
+        new THREE.MeshStandardMaterial({
+            color: Math.random() * 0xffffff
+        })
+    );
 
-// =====================================
-// MOBILE CONTROLS
-// =====================================
+    body.position.y = 1;
 
-function holdButton(id, down, up) {
-const button = document.getElementById(id);
+    const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3, 8, 8),
+        new THREE.MeshStandardMaterial({
+            color: 0xc58c65
+        })
+    );
 
-if (!button) return;
+    head.position.y = 1.75;
 
-button.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    down();
-});
+    person.add(body);
+    person.add(head);
 
-button.addEventListener('pointerup', e => {
-    e.preventDefault();
-    up();
-});
-
-button.addEventListener('pointerleave', up);
-button.addEventListener('pointercancel', up);
-
+    return person;
 }
 
-holdButton('left',
-() => steering = -1,
-() => steering = 0
-);
+/* =========================================
+   CAMERA POSITION
+========================================= */
 
-holdButton('right',
-() => steering = 1,
-() => steering = 0
-);
+function updateCameraPosition() {
 
-holdButton('accelerator',
-() => throttle = true,
-() => throttle = false
-);
+    if (!roadCurve) return;
 
-holdButton('brake',
-() => braking = true,
-() => braking = false
-);
+    const t = THREE.MathUtils.clamp(
+        distance / roadLength,
+        0,
+        1
+    );
 
-holdButton('clutch',
-() => clutch = true,
-() => clutch = false
-);
+    const point = roadCurve.getPointAt(t);
 
-// Gear selector
-document.querySelectorAll('[data-gear]').forEach(button => {
-button.addEventListener('click', () => {
-const selected = Number(button.dataset.gear);
+    const tangent = roadCurve.getTangentAt(t);
 
-    if (selected === -1 && speed > 2) return;
+    const right = new THREE.Vector3(
+        -tangent.z,
+        0,
+        tangent.x
+    ).normalize();
 
-    gear = selected;
+    const position = point.clone();
 
-    document.getElementById('gear').textContent =
-        gear === -1 ? 'R' :
-        gear === 0 ? 'N' : gear;
+    position.addScaledVector(
+        right,
+        lateralPosition
+    );
+
+    camera.position.set(
+        position.x,
+        position.y + 2.3,
+        position.z
+    );
+
+    const lookPoint = position.clone().addScaledVector(
+        tangent,
+        25
+    );
+
+    lookPoint.y += 1.0;
+
+    camera.lookAt(lookPoint);
+
+    // Gentle bus movement
+
+    camera.rotateZ(-steering * 0.035);
+}
+
+/* =========================================
+   START GAME
+========================================= */
+
+$("startButton").addEventListener("click", () => {
+
+    startScreen.style.display = "none";
+
+    gameContainer.style.display = "block";
+
+    running = true;
+
+    paused = false;
+
+    clock.start();
+
+    showNotification("Welcome aboard HRTC!");
+
 });
 
+/* =========================================
+   STEERING CONTROLS
+========================================= */
+
+function holdButton(id, callback) {
+
+    const button = $(id);
+
+    if (!button) return;
+
+    button.addEventListener("pointerdown", event => {
+
+        event.preventDefault();
+
+        callback(true);
+
+        button.setPointerCapture(event.pointerId);
+
+    });
+
+    button.addEventListener("pointerup", event => {
+
+        event.preventDefault();
+
+        callback(false);
+
+    });
+
+    button.addEventListener("pointercancel", () => {
+        callback(false);
+    });
+
+    button.addEventListener("lostpointercapture", () => {
+        callback(false);
+    });
+}
+
+holdButton("leftButton", value => {
+    steering = value ? -1 : 0;
 });
 
-// =====================================
-// PASSENGER COLLECTION
-// =====================================
+holdButton("rightButton", value => {
+    steering = value ? 1 : 0;
+});
 
-function checkPassengerStops() {
-for (const stop of stops) {
-const distance = Math.abs(busPosition - Math.abs(stop.z));
+holdButton("accelerator", value => {
+    acceleratorPressed = value;
+});
 
-    if (
-        distance < 5 &&
-        speed < 2 &&
-        !stop.collected
-    ) {
-        stop.collected = true;
+holdButton("brake", value => {
+    brakePressed = value;
+});
 
-        const count = stop.passengers;
-        const fare = 25;
+holdButton("clutch", value => {
+    clutchPressed = value;
+});
 
-        money += count * fare;
+/* =========================================
+   MANUAL GEARBOX
+========================================= */
 
-        document.getElementById('money').textContent = money;
+document.querySelectorAll(".gear-button").forEach(button => {
 
-        passengers.forEach(p => {
-            if (p.stop === stop) {
-                scene.remove(p.object);
+    button.addEventListener("click", () => {
+
+        const selected = button.dataset.gear;
+
+        if (Math.abs(speed) > 5) {
+
+            showNotification(
+                "Slow down before changing gear!"
+            );
+
+            return;
+        }
+
+        if (!clutchPressed && Math.abs(speed) > 0.5) {
+
+            showNotification(
+                "Press clutch to change gear!"
+            );
+
+            return;
+        }
+
+        currentGear = selected;
+
+        document.querySelectorAll(".gear-button")
+            .forEach(b => b.classList.remove("active"));
+
+        button.classList.add("active");
+
+        $("gear").textContent = currentGear;
+
+        showNotification("Gear changed to " + selected);
+    });
+});
+
+/* =========================================
+   DRIVING PHYSICS
+========================================= */
+
+function updateDriving(dt) {
+
+    if (!running || paused || finished) return;
+
+    const oldSpeed = speed;
+
+    if (acceleratorPressed && !clutchPressed && currentGear !== "N") {
+
+        const direction = currentGear === "R" ? -1 : 1;
+
+        const maxSpeed = gearLimits[currentGear];
+
+        const acceleration = gearAcceleration[currentGear];
+
+        speed += direction * acceleration * dt;
+
+        if (direction > 0) {
+
+            speed = Math.min(speed, maxSpeed);
+
+        } else {
+
+            speed = Math.max(speed, -maxSpeed);
+        }
+    }
+
+    if (brakePressed) {
+
+        if (speed > 0) {
+            speed = Math.max(0, speed - 18 * dt);
+        }
+
+        if (speed < 0) {
+            speed = Math.min(0, speed + 18 * dt);
+        }
+    }
+
+    // Natural rolling resistance
+
+    if (!acceleratorPressed && !brakePressed) {
+
+        if (speed > 0) {
+            speed = Math.max(0, speed - 1.2 * dt);
+        }
+
+        if (speed < 0) {
+            speed = Math.min(0, speed + 1.2 * dt);
+        }
+    }
+
+    // Simple uphill / downhill effect
+
+    const t = THREE.MathUtils.clamp(
+        distance / roadLength,
+        0,
+        1
+    );
+
+    const tangent = roadCurve.getTangentAt(t);
+
+    const slopeEffect = tangent.y * 4;
+
+    if (speed > 0) {
+        speed -= slopeEffect * dt;
+    }
+
+    speed = THREE.MathUtils.clamp(speed, -15, 85);
+
+    // Steering movement
+
+    if (Math.abs(speed) > 1) {
+
+        lateralPosition +=
+            steering * Math.min(Math.abs(speed) / 30, 1) * 8 * dt;
+    }
+
+    lateralPosition = THREE.MathUtils.clamp(
+        lateralPosition,
+        -9,
+        9
+    );
+
+    // Return steering to centre when released
+
+    if (steering === 0) {
+
+        lateralPosition *= Math.pow(0.92, dt * 60);
+    }
+
+    // Update route distance
+
+    distance += speed * dt / 3.6;
+
+    distance = THREE.MathUtils.clamp(
+        distance,
+        0,
+        roadLength
+    );
+
+    // Fuel consumption
+
+    if (acceleratorPressed && speed > 0) {
+
+        fuel -= 0.015 * dt;
+    }
+
+    fuel = Math.max(0, fuel);
+
+    if (fuel <= 0) {
+
+        speed = Math.max(0, speed - 5 * dt);
+
+        showNotification("Fuel empty! Journey stopped.");
+    }
+
+    updateCameraPosition();
+
+    checkStops();
+
+    updateDashboard();
+
+    if (distance >= roadLength - 5 && speed >= 0) {
+
+        finishJourney();
+    }
+}
+
+/* =========================================
+   BUS STOP DETECTION
+========================================= */
+
+function checkStops() {
+
+    currentStop = null;
+
+    for (const stop of stops) {
+
+        if (stop.completed) continue;
+
+        const stopDistance = stop.fraction * roadLength;
+
+        const difference = stopDistance - distance;
+
+        if (Math.abs(difference) < 25) {
+
+            currentStop = stop;
+
+            if (Math.abs(speed) < 2) {
+
+                $("stopPanel").style.display = "block";
+
+                $("stopName").textContent =
+                    stop.name + " Bus Stop";
+
+                $("boardButton").disabled = false;
+
+            } else {
+
+                $("stopPanel").style.display = "none";
             }
+
+            break;
+        }
+    }
+
+    if (!currentStop) {
+
+        $("stopPanel").style.display = "none";
+    }
+}
+
+/* =========================================
+   PASSENGER PICKUP
+========================================= */
+
+$("boardButton").addEventListener("click", () => {
+
+    if (!currentStop) return;
+
+    if (Math.abs(speed) > 2) {
+
+        showNotification("Stop the bus first!");
+
+        return;
+    }
+
+    if (!doorsOpen) {
+
+        showNotification("Open the bus door first!");
+
+        return;
+    }
+
+    const stop = currentStop;
+
+    if (stop.completed) return;
+
+    stop.completed = true;
+
+    const pickedUp = stop.passengers;
+
+    passengers += pickedUp;
+
+    const fare = pickedUp * 20;
+
+    money += fare;
+
+    if (stop.personObjects) {
+
+        stop.personObjects.forEach(person => {
+            scene.remove(person);
         });
-
-        alert(
-            count + ' passengers boarded!\nFare collected: ₹' +
-            (count * fare)
-        );
-    }
-}
-
-}
-
-// =====================================
-// GAME PHYSICS
-// =====================================
-
-function updatePhysics(delta) {
-const acceleration = 13;
-const brakes = 25;
-
-if (throttle && !clutch && gear !== 0 && fuel > 0) {
-    let ratio = gear === -1 ? 0.65 : 1 / gear;
-
-    const direction = gear === -1 ? -1 : 1;
-
-    const limit = gear === -1 ? 18 : maxSpeed;
-
-    if (Math.abs(speed) < limit) {
-        speed += direction * acceleration * ratio * delta;
     }
 
-    fuel -= 0.012 * delta;
-} else {
-    speed *= Math.pow(0.985, delta * 60);
-}
+    $("stopPanel").style.display = "none";
 
-if (braking) {
-    speed = THREE.MathUtils.damp(speed, 0, 5, delta);
-}
+    showNotification(
+        pickedUp + " passengers boarded! Fare: ₹" + fare
+    );
 
-speed = THREE.MathUtils.clamp(speed, -18, maxSpeed);
+    currentStop = null;
 
-busPosition += speed * delta / 3.6;
+    updateDashboard();
+});
 
-engineRPM = clutch || gear === 0
-    ? 750 + (throttle ? 1600 : 0)
-    : 750 + Math.abs(speed) * 25;
+/* =========================================
+   DOORS
+========================================= */
 
-if (fuel <= 0) {
-    fuel = 0;
-    speed = THREE.MathUtils.damp(speed, 0, 2, delta);
-}
+$("doorButton").addEventListener("click", () => {
 
-// Road and scenery movement
-for (const line of lines) {
-    line.position.z += speed * delta / 3.6;
+    if (Math.abs(speed) > 1) {
 
-    if (line.position.z > 10) {
-        line.position.z -= 1400;
+        showNotification("Stop the bus before opening doors!");
+
+        return;
     }
+
+    doorsOpen = !doorsOpen;
+
+    $("doorButton").textContent = doorsOpen
+        ? "🚪 CLOSE DOOR"
+        : "🚪 OPEN DOOR";
+
+    showNotification(
+        doorsOpen ? "Doors opened" : "Doors closed"
+    );
+});
+
+/* =========================================
+   HORN
+========================================= */
+
+$("hornButton").addEventListener("click", () => {
+
+    showNotification("📢 HORN!");
+});
+
+/* =========================================
+   LIGHTS
+========================================= */
+
+$("lightButton").addEventListener("click", () => {
+
+    lightsOn = !lightsOn;
+
+    $("lightButton").textContent = lightsOn
+        ? "💡 LIGHTS ON"
+        : "💡 LIGHTS";
+
+    showNotification(
+        lightsOn ? "Headlights switched on" : "Headlights switched off"
+    );
+});
+
+/* =========================================
+   CAMERA BUTTON
+========================================= */
+
+$("cameraButton").addEventListener("click", () => {
+
+    showNotification("Interior camera is active");
+});
+
+/* =========================================
+   PAUSE SYSTEM
+========================================= */
+
+$("pauseButton").addEventListener("click", pauseGame);
+
+$("resumeButton").addEventListener("click", resumeGame);
+
+function pauseGame() {
+
+    if (!running || finished) return;
+
+    paused = true;
+
+    $("pauseMenu").style.display = "flex";
 }
 
-// Steering camera
-camera.position.x = THREE.MathUtils.damp(
-    camera.position.x,
-    steering * 0.22,
-    2,
-    delta
-);
+function resumeGame() {
 
-camera.rotation.z = THREE.MathUtils.damp(
-    camera.rotation.z,
-    -steering * 0.035,
-    2,
-    delta
-);
+    paused = false;
 
-steeringWheel.rotation.z = -steering * 0.65;
+    $("pauseMenu").style.display = "none";
 
-// Move world relative to bus
-scene.position.z = busPosition;
-
+    clock.getDelta();
 }
 
-// =====================================
-// DASHBOARD
-// =====================================
+/* =========================================
+   RESTART JOURNEY
+========================================= */
+
+$("restartButton").addEventListener("click", () => {
+
+    location.reload();
+});
+
+$("playAgainButton").addEventListener("click", () => {
+
+    location.reload();
+});
+
+/* =========================================
+   FINISH JOURNEY
+========================================= */
+
+function finishJourney() {
+
+    finished = true;
+
+    running = false;
+
+    $("finalMoney").textContent = money;
+
+    $("finishScreen").style.display = "flex";
+}
+
+/* =========================================
+   DASHBOARD UPDATE
+========================================= */
 
 function updateDashboard() {
-document.getElementById('speed').textContent =
-Math.round(Math.abs(speed));
 
-document.getElementById('fuel').textContent =
-    Math.round(fuel);
+    $("speed").textContent = Math.round(
+        Math.abs(speed)
+    );
 
-document.getElementById('money').textContent = money;
+    $("gear").textContent = currentGear;
 
+    $("money").textContent = money;
+
+    $("fuel").textContent = Math.round(fuel);
+
+    $("passengers").textContent = passengers;
+
+    $("distance").textContent = (
+        distance / 1000
+    ).toFixed(1);
+
+    const t = Math.min(distance / roadLength, 1);
+
+    let location = "Shimla";
+
+    if (t > 0.19) location = "Kufri";
+
+    if (t > 0.40) location = "Narkanda";
+
+    if (t > 0.69) location = "Kullu";
+
+    if (t > 0.91) location = "Manali";
+
+    $("location").textContent = location;
+
+    const nextStop = stops.find(
+        stop => !stop.completed
+    );
+
+    $("destination").textContent =
+        nextStop ? nextStop.name : "Manali";
 }
 
-// =====================================
-// GAME LOOP
-// =====================================
+/* =========================================
+   NOTIFICATION SYSTEM
+========================================= */
 
-let previousTime = performance.now();
+function showNotification(message) {
 
-function animate() {
-requestAnimationFrame(animate);
+    const box = $("notification");
 
-const now = performance.now();
+    box.textContent = message;
 
-const delta = Math.min((now - previousTime) / 1000, 0.05);
+    box.classList.add("show");
 
-previousTime = now;
+    clearTimeout(notificationTimer);
 
-updatePhysics(delta);
-updateDashboard();
-checkPassengerStops();
+    notificationTimer = setTimeout(() => {
 
-renderer.render(scene, camera);
+        box.classList.remove("show");
 
+    }, 2500);
 }
 
-animate();
+/* =========================================
+   KEYBOARD SUPPORT
+========================================= */
 
-// =====================================
-// RESIZE
-// =====================================
+window.addEventListener("keydown", event => {
 
-window.addEventListener('resize', () => {
-camera.aspect = window.innerWidth / window.innerHeight;
-camera.updateProjectionMatrix();
+    if (event.repeat) return;
 
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
+    switch (event.key.toLowerCase()) {
 
+        case "w":
+        case "arrowup":
+            acceleratorPressed = true;
+            break;
+
+        case "s":
+        case "arrowdown":
+            brakePressed = true;
+            break;
+
+        case "a":
+        case "arrowleft":
+            steering = -1;
+            break;
+
+        case "d":
+        case "arrowright":
+            steering = 1;
+            break;
+
+        case " ":
+            clutchPressed = true;
+            break;
+
+        case "p":
+            paused ? resumeGame() : pauseGame();
+            break;
+    }
 });
 
-// =====================================
-// LOADING SCREEN
-// =====================================
+window.addEventListener("keyup", event => {
 
-const loading = document.getElementById('loading');
+    switch (event.key.toLowerCase()) {
 
-if (loading) {
-loading.style.display = 'none';
+        case "w":
+        case "arrowup":
+            acceleratorPressed = false;
+            break;
+
+        case "s":
+        case "arrowdown":
+            brakePressed = false;
+            break;
+
+        case "a":
+        case "arrowleft":
+        case "d":
+        case "arrowright":
+            steering = 0;
+            break;
+
+        case " ":
+            clutchPressed = false;
+            break;
+    }
+});
+
+/* =========================================
+   ANIMATION LOOP
+========================================= */
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    const dt = Math.min(
+        clock.getDelta(),
+        0.05
+    );
+
+    if (running && !paused && !finished) {
+
+        updateDriving(dt);
+    }
+
+    renderer.render(scene, camera);
 }
 
-console.log('HRTC Bus Simulator started!');
+/* =========================================
+   RESIZE
+========================================= */
+
+window.addEventListener("resize", () => {
+
+    if (!camera || !renderer) return;
+
+    camera.aspect =
+        window.innerWidth / window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 1.25)
+    );
+});
+
+/* =========================================
+   START INITIALIZATION
+========================================= */
+
+initializeGame().catch(error => {
+
+    console.error(error);
+
+    loadingStatus.textContent =
+        "Game could not load. Check your internet connection and refresh.";
+
+});
