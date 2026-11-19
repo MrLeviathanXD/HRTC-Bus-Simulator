@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HRTC Bus Simulator 3D</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body><div id="loading">HRTC BUS SIMULATOR<br>Loading...</div><div id="dashboard">
+  <div>HRTC BUS SIMULATOR</div>
+  <div>Speed: <span id="speed">0</span> km/h</div>
+  <div>Gear: <span id="gear">N</span></div>
+  <div>Money: ₹<span id="money">0</span></div>
+  <div>Fuel: <span id="fuel">100</span>%</div>
+</div><div id="controls">
+  <div class="steering">
+    <button id="left">◀</button>
+    <button id="right">▶</button>
+  </div>  <div class="pedals">
+    <button id="clutch">CLUTCH</button>
+    <button id="brake">BRAKE</button>
+    <button id="accelerator">ACCELERATOR</button>
+  </div>  <div id="gears">
+    <button data-gear="-1">R</button>
+    <button data-gear="0">N</button>
+    <button data-gear="1">1</button>
+    <button data-gear="2">2</button>
+    <button data-gear="3">3</button>
+    <button data-gear="4">4</button>
+    <button data-gear="5">5</button>
+  </div>
+</div><script type="module" src="game.js"></script></body>
+</html>
