@@ -1,204 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <meta name="theme-color" content="#101820">
-
-    <title>HRTC Bus Simulator</title>
-
-    <!-- Game CSS -->
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#102019">
+<title>HRTC Bus Simulator</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <!-- LOADING SCREEN -->
-    <div id="loadingScreen">
-        <h1>HRTC BUS SIMULATOR</h1>
-        <p>Preparing the Himachal Pradesh roads...</p>
-        <div class="loader"></div>
-        <p id="loadingStatus">Loading game...</p>
-    </div>
-
-    <!-- START SCREEN -->
-    <div id="startScreen">
-        <div class="start-content">
-            <h1>HRTC BUS SIMULATOR</h1>
-            <h3>Explore the Beauty of Himachal Pradesh</h3>
-
-            <div class="start-details">
-                <p>🚌 Realistic Bus Driving</p>
-                <p>🏔️ Himachal Mountain Roads</p>
-                <p>👥 Passenger Pickup</p>
-                <p>⚙️ Manual Transmission</p>
-            </div>
-
-            <button id="startButton">START YOUR JOURNEY</button>
-        </div>
-    </div>
-
-    <!-- MAIN GAME -->
-    <div id="gameContainer">
-
-        <!-- THREE.JS GAME WORLD -->
-        <div id="gameCanvas"></div>
-
-        <!-- TOP DASHBOARD -->
-        <div id="topDashboard">
-
-            <div class="dashboard-box">
-                <span>📍 LOCATION</span>
-                <strong id="location">Shimla</strong>
-            </div>
-
-            <div class="dashboard-box">
-                <span>🚍 SPEED</span>
-                <strong><span id="speed">0</span> km/h</strong>
-            </div>
-
-            <div class="dashboard-box">
-                <span>⚙️ GEAR</span>
-                <strong id="gear">N</strong>
-            </div>
-
-            <div class="dashboard-box">
-                <span>💰 MONEY</span>
-                <strong>₹<span id="money">0</span></strong>
-            </div>
-
-            <div class="dashboard-box">
-                <span>⛽ FUEL</span>
-                <strong><span id="fuel">100</span>%</strong>
-            </div>
-
-        </div>
-
-        <!-- ROUTE INFORMATION -->
-        <div id="routePanel">
-            <div>ROUTE: SHIMLA → MANALI</div>
-            <div>DESTINATION: <span id="destination">Kufri</span></div>
-            <div>DISTANCE: <span id="distance">0</span> km</div>
-        </div>
-
-        <!-- PASSENGER INFORMATION -->
-        <div id="passengerPanel">
-            <span>👥 PASSENGERS:</span>
-            <strong id="passengers">0</strong>
-        </div>
-
-        <!-- GAME NOTIFICATIONS -->
-        <div id="notification">
-            Welcome to HRTC Bus Simulator!
-        </div>
-
-        <!-- LEFT SIDE CONTROLS -->
-        <div id="leftControls">
-
-            <button id="leftButton" class="steering-button">
-                ◀
-            </button>
-
-            <button id="rightButton" class="steering-button">
-                ▶
-            </button>
-
-        </div>
-
-        <!-- RIGHT SIDE DRIVING CONTROLS -->
-        <div id="rightControls">
-
-            <button id="accelerator" class="pedal-button accelerator">
-                ACCELERATOR
-            </button>
-
-            <button id="brake" class="pedal-button brake">
-                BRAKE
-            </button>
-
-            <button id="clutch" class="pedal-button clutch">
-                CLUTCH
-            </button>
-
-        </div>
-
-        <!-- MANUAL GEARBOX -->
-        <div id="gearPanel">
-
-            <div class="gear-title">MANUAL GEARBOX</div>
-
-            <div class="gear-buttons">
-
-                <button class="gear-button" data-gear="R">R</button>
-                <button class="gear-button" data-gear="N">N</button>
-                <button class="gear-button" data-gear="1">1</button>
-                <button class="gear-button" data-gear="2">2</button>
-                <button class="gear-button" data-gear="3">3</button>
-                <button class="gear-button" data-gear="4">4</button>
-                <button class="gear-button" data-gear="5">5</button>
-
-            </div>
-
-        </div>
-
-        <!-- EXTRA BUS CONTROLS -->
-        <div id="extraControls">
-
-            <button id="hornButton">📢 HORN</button>
-
-            <button id="doorButton">🚪 OPEN DOOR</button>
-
-            <button id="lightButton">💡 LIGHTS</button>
-
-            <button id="cameraButton">📷 CAMERA</button>
-
-            <button id="pauseButton">Ⅱ PAUSE</button>
-
-        </div>
-
-        <!-- PASSENGER STOP PANEL -->
-        <div id="stopPanel">
-
-            <h3>BUS STOP</h3>
-
-            <p id="stopName">No nearby bus stop</p>
-
-            <button id="boardButton">
-                PICK UP PASSENGERS
-            </button>
-
-        </div>
-
-        <!-- PAUSE MENU -->
-        <div id="pauseMenu">
-
-            <h2>GAME PAUSED</h2>
-
-            <button id="resumeButton">RESUME GAME</button>
-
-            <button id="restartButton">RESTART JOURNEY</button>
-
-        </div>
-
-        <!-- GAME OVER / FINISH SCREEN -->
-        <div id="finishScreen">
-
-            <h1>JOURNEY COMPLETED!</h1>
-
-            <p>You have completed your HRTC journey.</p>
-
-            <p>Money Earned: ₹<span id="finalMoney">0</span></p>
-
-            <button id="playAgainButton">PLAY AGAIN</button>
-
-        </div>
-
-    </div>
-
-    <!-- THREE.JS GAME ENGINE -->
-    <script type="module" src="game.js"></script>
-
-</body>
-  </html>
+<div id="loadingScreen"><h1>HRTC BUS SIMULATOR</h1><p>Building Himachal Pradesh…</p><div class="loader"></div><p id="loadingStatus">Loading 3D world</p></div>
+<div id="startScreen"><div class="start-card"><h1>HRTC BUS SIMULATOR</h1><p>Shimla • Kufri • Narkanda • Kullu • Manali</p><p class="features">Third-person driving · Mountain roads · Towns · Traffic · Passengers · Petrol pumps</p><button id="startButton">START JOURNEY</button><small>Best played in landscape mode</small></div></div>
+<main id="gameContainer">
+<div id="gameCanvas"></div>
+<div id="topDashboard">
+<div class="dash"><small>LOCATION</small><b id="location">Shimla</b></div>
+<div class="dash"><small>SPEED</small><b><span id="speed">0</span> km/h</b></div>
+<div class="dash"><small>GEAR</small><b id="gear">N</b></div>
+<div class="dash"><small>MONEY</small><b>₹<span id="money">0</span></b></div>
+<div class="dash"><small>FUEL</small><b><span id="fuel">100</span>%</b></div>
+</div>
+<div id="routePanel"><b>HIMACHAL ROUTE</b><span id="destination">Next: Kufri</span><span><b id="distance">0.0</b> km travelled</span></div>
+<div id="passengerPanel">PASSENGERS: <b id="passengers">0</b></div>
+<div id="notification"></div>
+<div id="steeringControl"><div id="steeringWheel"><span>H</span></div><small>STEERING</small></div>
+<div id="pedals">
+<button id="clutch" class="pedal clutch">CLUTCH</button>
+<button id="brake" class="pedal brake">BRAKE</button>
+<button id="accelerator" class="pedal accelerator">ACCEL</button>
+</div>
+<div id="gearPanel"><small>MANUAL GEARBOX</small><div class="gears">
+<button class="gear-button" data-gear="R">R</button><button class="gear-button active" data-gear="N">N</button>
+<button class="gear-button" data-gear="1">1</button><button class="gear-button" data-gear="2">2</button>
+<button class="gear-button" data-gear="3">3</button><button class="gear-button" data-gear="4">4</button><button class="gear-button" data-gear="5">5</button>
+</div></div>
+<div id="utility"><button id="hornButton">HORN</button><button id="lightButton">LIGHTS</button><button id="doorButton">OPEN DOOR</button><button id="pauseButton">Ⅱ</button></div>
+<div id="servicePanel"><h3 id="serviceTitle">BUS STOP</h3><p id="serviceText"></p><button id="boardButton">PICK UP PASSENGERS</button><button id="fuelButton">REFUEL — ₹100</button></div>
+<div id="pauseMenu"><h2>PAUSED</h2><button id="resumeButton">RESUME</button><button id="restartButton">RESTART</button></div>
+<div id="finishScreen"><h1>JOURNEY COMPLETED!</h1><p>Fare collected: ₹<b id="finalMoney">0</b></p><button id="playAgainButton">PLAY AGAIN</button></div>
+</main>
+<script type="module" src="game.js"></script>
+</body></html>
